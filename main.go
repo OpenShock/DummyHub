@@ -258,6 +258,11 @@ func handleWebSocketMessages(conn *websocket.Conn) error {
 			if err != nil {
 				return err
 			}
+		case Gateway.GatewayToHubMessagePayloadTrigger:
+			err := handleTrigger(message)
+			if err != nil {
+				return err
+			}
 		case Gateway.GatewayToHubMessagePayloadShockerCommandList:
 			err := handleCommandList(message)
 			if err != nil {
@@ -267,6 +272,30 @@ func handleWebSocketMessages(conn *websocket.Conn) error {
 			log.Printf("Unknown message type: %d", message.PayloadType())
 		}
 	}
+}
+
+func handleTrigger(message *Gateway.GatewayToHubMessage) error {
+	table := flatbuffers.Table{}
+	if !message.Payload(&table) {
+		return fmt.Errorf("failed to deserialize commandlist")
+	}
+	trigger := Gateway.Trigger{}
+	trigger.Init(table.Bytes, table.Pos)
+
+	switch trigger.Type() {
+	case Gateway.TriggerTypeRestart:
+		log.Println("[TRIGGER] Received restart command!");
+	case Gateway.TriggerTypeEmergencyStop:
+		log.Println("[TRIGGER] Emergency stop activated!");
+	case Gateway.TriggerTypeCaptivePortalEnable:
+		log.Println("[TRIGGER] Captive portal enabled!");
+	case Gateway.TriggerTypeCaptivePortalDisable:
+		log.Println("[TRIGGER] Captive portal disabled!");
+	default:
+		log.Printf("Unknown message type: %d", message.PayloadType())
+	}
+
+	return nil
 }
 
 func handleCommandList(message *Gateway.GatewayToHubMessage) error {
