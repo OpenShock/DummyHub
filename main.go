@@ -41,7 +41,9 @@ func loadConfig() (*Config, error) {
 	file, err := os.Open(configFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return &Config{BaseURL: "https://api.openshock.app"}, nil
+			var newConfig Config = Config{BaseURL: "https://api.openshock.app"}
+			saveConfig(&newConfig)
+			return &newConfig, nil
 		}
 		return nil, err
 	}
@@ -284,13 +286,13 @@ func handleTrigger(message *Gateway.GatewayToHubMessage) error {
 
 	switch trigger.Type() {
 	case Gateway.TriggerTypeRestart:
-		log.Println("[TRIGGER] Received restart command!");
+		log.Println("[TRIGGER] Received restart command!")
 	case Gateway.TriggerTypeEmergencyStop:
-		log.Println("[TRIGGER] Emergency stop activated!");
+		log.Println("[TRIGGER] Emergency stop activated!")
 	case Gateway.TriggerTypeCaptivePortalEnable:
-		log.Println("[TRIGGER] Captive portal enabled!");
+		log.Println("[TRIGGER] Captive portal enabled!")
 	case Gateway.TriggerTypeCaptivePortalDisable:
-		log.Println("[TRIGGER] Captive portal disabled!");
+		log.Println("[TRIGGER] Captive portal disabled!")
 	default:
 		log.Printf("Unknown message type: %d", message.PayloadType())
 	}
