@@ -270,6 +270,11 @@ func handleWebSocketMessages(conn *websocket.Conn) error {
 			if err != nil {
 				return err
 			}
+		case Gateway.GatewayToHubMessagePayloadOtaUpdateRequest:
+			err := handleOtaUpdateRequest(message)
+			if err != nil {
+				return err
+			}
 		default:
 			log.Printf("Unknown message type: %d", message.PayloadType())
 		}
@@ -318,6 +323,23 @@ func handleCommandList(message *Gateway.GatewayToHubMessage) error {
 
 		fmt.Printf("[COMMAND] %s at %v%% for %v seconds\n", command.Type().String(), command.Intensity(), float32(command.Duration())/1000.0)
 	}
+
+	return nil
+}
+
+func handleOtaUpdateRequest(message *Gateway.GatewayToHubMessage) error {
+	table := flatbuffers.Table{}
+	if !message.Payload(&table) {
+		return fmt.Errorf("failed to deserialize OTA update request")
+	}
+
+	otaRequest := Gateway.OtaUpdateRequest{}
+	otaRequest.Init(table.Bytes, table.Pos)
+
+	version := Types.SemVer{}
+	version = *otaRequest.Version(&version)
+
+	fmt.Printf("[OTA UPDATE] Requested version: %d.%d.%d\n", version.Major(), version.Minor(), version.Patch())
 
 	return nil
 }
