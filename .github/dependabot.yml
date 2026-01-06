@@ -1,11 +1,21 @@
 version: 2
-updates:
-  - package-ecosystem: 'gomod'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+multi-ecosystem-groups:
+  maintenance:
     schedule:
-      interval: 'weekly'
+      interval: weekly
+      day: monday
+      time: '06:00'
+
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    patterns:
+      - '*'
+    multi-ecosystem-group: maintenance
+
+  - package-ecosystem: github-actions
+    directory: /
+    patterns:
+      - '*'
+    multi-ecosystem-group: maintenance
